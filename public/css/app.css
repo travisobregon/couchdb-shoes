@@ -1,0 +1,20 @@
+.section.main {
+    background-color: #f5f5f5; 
+}
+
+.nav-item img {
+    max-height: 60px;
+}   
+
+img.flip {
+    -moz-transform: scaleX(-1);
+    -o-transform: scaleX(-1);
+    -webkit-transform: scaleX(-1);
+    transform: scaleX(-1);
+    filter: FlipH;
+    -ms-filter: "FlipH";
+}
+
+.card.shoe:not(:last-child) {
+    margin-bottom: 15px;
+}
