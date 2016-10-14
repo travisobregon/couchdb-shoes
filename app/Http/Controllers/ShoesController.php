@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\ShoesDesignDocument;
 use Illuminate\Http\Request;
 use Doctrine\CouchDB\CouchDBClient;
 use Doctrine\CouchDB\HTTP\HTTPException;
@@ -27,11 +28,48 @@ class ShoesController extends Controller
      */
     public function index()
     {
-        $shoes = array_map(function ($row) {
+        $allShoes = collect($this->client->allDocs()->body['rows'])
+            ->map(function ($row) {
+                if ($row['id'] != '_design/shoes') {
+                    return $row['doc'];
+                }
+            })
+            ->filter(function ($doc) {
+                return ! is_null($doc);
+            })
+            ->toArray();
+            
+        $this->client->createDesignDocument('shoes', new ShoesDesignDocument());
+        
+        $query = $this->client->createViewQuery('shoes', 'on_sale');
+        $query->setIncludeDocs(true);
+        $onSaleShoes = array_map(function ($row) {
             return $row['doc'];
-        }, $this->client->allDocs()->body['rows']);
+        }, $query->execute()->toArray());
 
-        return view('shoes.index', compact('shoes'));
+        $query = $this->client->createViewQuery('shoes', 'popular_vendor_shoes');
+        $query->setReduce(true);
+        $query->setGroupLevel(1);
+        $popularVendorShoes = $query->execute()->toArray();
+        usort($popularVendorShoes, function ($a, $b) {
+            return $b['value'] - $a['value'];
+        });
+
+        $query = $this->client->createViewQuery('shoes', 'most_money_made_shoes');
+        $mostMoneyMadeShoes = $query->execute()->toArray();
+        usort($mostMoneyMadeShoes, function ($a, $b) {
+            return $b['value'] - $a['value'];
+        });
+
+        $query = $this->client->createViewQuery('shoes', 'most_pairs_available_shoes');
+        $query->setReduce(true);
+        $query->setGroupLevel(1);
+        $mostPairsAvailableShoes = $query->execute()->toArray();
+        usort($mostPairsAvailableShoes, function ($a, $b) {
+            return $b['value'] - $a['value'];
+        });
+        
+        return view('shoes.index', compact('allShoes', 'onSaleShoes', 'popularVendorShoes', 'mostMoneyMadeShoes', 'mostPairsAvailableShoes'));
     }
 
     /**

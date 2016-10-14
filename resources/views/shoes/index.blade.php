@@ -3,16 +3,15 @@
 @section('title', 'View')
 
 @section('content')
-    <div class="columns">
-        <div class="column is-6">
-            <div class="box">
-                <p>Time to search</p>
+    <div class="box">
+        <div class="columns">
+            <div class="column is-4">
+                @include('partials.view-aside')
             </div>
-        </div>
-        <div class="column is-6">
-            @foreach ($shoes as $shoe)
-                @include('partials.shoe')
-            @endforeach
+
+            <div class="column is-8">
+                @include('partials.shoes')
+            </div>
         </div>
     </div>
 
@@ -23,6 +22,14 @@
 
         $('.modal-close, .modal-background, .cancel-delete').click(function (e) {
             $('.modal').removeClass('is-active');
+        });
+
+        $('#view-menu li a').click(function (e) {
+            $('#view-menu li a').removeClass('is-active');
+            $(this).addClass('is-active');
+
+            $('.js-shoe-view').addClass('is-hidden');
+            $('#'+$(this).attr('data-id')).removeClass('is-hidden');
         });
     </script>
 @endsection
